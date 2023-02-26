@@ -1,14 +1,20 @@
 package modules
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-func createPollEmbedMessage(question string, answer string, answerNumber string) *discordgo.MessageEmbed {
+func createPollEmbedMessage(
+	question string,
+	answer string,
+	answerNumber string,
+) *discordgo.MessageEmbed {
 	pollEmbed := NewEmbed().
 		SetTitle(question).
 		SetDescription(answer).
@@ -18,7 +24,6 @@ func createPollEmbedMessage(question string, answer string, answerNumber string)
 }
 
 func splitPollMessage(message string) ([]string, error) {
-
 	splitMessage := strings.Split(message, "\"")
 
 	// Remove empty
@@ -75,7 +80,6 @@ func generatePollEmbedMessage(m *discordgo.MessageCreate) (*discordgo.MessageEmb
 }
 
 func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate) error {
-
 	umoji := [9]string{
 		"\u0031\u20E3",
 		"\u0032\u20E3",
@@ -96,14 +100,12 @@ func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate)
 	}
 
 	sentMessage, err := s.ChannelMessageSendEmbed(channelId, me)
-
 	if err != nil {
 		return err
 	}
 
 	sentMessageId := sentMessage.ID
 	answerLength, err := strconv.Atoi(me.Fields[0].Value)
-
 	if err != nil {
 		return err
 	}
@@ -113,5 +115,36 @@ func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate)
 	}
 
 	return nil
+}
 
+func BoostHandler(
+	s *discordgo.Session,
+	e *discordgo.GuildMemberUpdate,
+	boostRoleID string,
+	pendaRoleID string,
+	pendaGoldRole string,
+) error {
+	if e.Member != nil && e.Member.Roles != nil {
+		var isPenda bool = false
+		var isBooster bool = false
+		for _, roleID := range e.Member.Roles {
+			if roleID == boostRoleID {
+				isBooster = true
+			}
+			if roleID == pendaRoleID {
+				isPenda = true
+			}
+		}
+		if isPenda == true && isBooster == true {
+			err := s.GuildMemberRoleAdd(e.GuildID, e.User.ID, pendaGoldRole)
+			if err != nil {
+				log.Fatal("Error during role attribution to member", err)
+				return err
+			}
+			return nil
+		}
+	} else {
+		return errors.New("Wrong member and Roles")
+	}
+	return nil
 }

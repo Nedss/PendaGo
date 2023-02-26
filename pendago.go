@@ -20,12 +20,14 @@ var (
 	BotChanId      = flag.String("bc", "", "Chan of generic bot commands")
 	RoleId         = flag.String("r", "", "Role ID to add with discord command")
 	TriggerCommand = flag.String("c", "", "Trigger command to add role on discord")
+	RoleBoost      = flag.String("rb", "", "Boost role ID")
+	PendaRole      = flag.String("pr", "", "Penda Role ID")
+	PendaGoldRole  = flag.String("pgr", "", "Penga Gold Role ID")
 )
 
 func init() { flag.Parse() }
 
 func main() {
-
 	discordBot, err := discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatal("error creating Discord session", err)
@@ -33,6 +35,10 @@ func main() {
 	}
 
 	discordBot.AddHandler(messageCreate)
+	// discordBot.AddHandler(modules.bosstHandler(*RoleBoost, *PendaRole, *PendaGoldRole))
+	discordBot.AddHandler(func(s *discordgo.Session, e *discordgo.GuildMemberUpdate) {
+		modules.BoostHandler(s, e, *RoleBoost, *PendaRole, *PendaGoldRole)
+	})
 
 	// Only listen receiving message events
 	discordBot.Identify.Intents = discordgo.IntentsGuildMessages
