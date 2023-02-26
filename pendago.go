@@ -17,6 +17,7 @@ var (
 	BotToken       = flag.String("t", "", "Bot token")
 	WowLogChanId   = flag.String("wl", "", "Channel ID to put WoW logs")
 	WowChanId      = flag.String("wc", "", "Channel ID to put WoW commands")
+	BotChanId      = flag.String("bc", "", "Chan of generic bot commands")
 	RoleId         = flag.String("r", "", "Role ID to add with discord command")
 	TriggerCommand = flag.String("c", "", "Trigger command to add role on discord")
 )
@@ -106,7 +107,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(message, "/poll") {
 		modules.GeneratePollEmbedReaction(s, m)
 	}
-	if *TriggerCommand == message {
-		modules.AddWowRole(s, m, *RoleId)
+	if channelId == *BotChanId {
+		if *TriggerCommand == message {
+			modules.AddWowRole(s, m, *RoleId)
+		}
 	}
 }
