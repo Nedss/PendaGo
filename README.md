@@ -12,6 +12,8 @@ go build
 # Usage
 ```
 Usage of ./pendago:
+  -bc string
+        Chan of generic bot commands
   -c string
         Trigger command to add role on discord
   -r string
@@ -22,5 +24,4 @@ Usage of ./pendago:
         Channel ID to put WoW commands
   -wl string
         Channel ID to put WoW logs
-
 ```
