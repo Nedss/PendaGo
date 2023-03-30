@@ -20,6 +20,8 @@ var (
 	BotChanId      = flag.String("bc", "", "Chan of generic bot commands")
 	RoleId         = flag.String("r", "", "Role ID to add with discord command")
 	TriggerCommand = flag.String("c", "", "Trigger command to add role on discord")
+  SWCommand     = flag.String("sc", "", "Trigger command to add SWC role on discord")
+  SWCRoleId     = flag.String("sr", "", "Role ID of SWC to add with discord command")
 )
 
 func init() { flag.Parse() }
@@ -110,6 +112,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if channelId == *BotChanId {
 		if *TriggerCommand == message {
 			modules.AddWowRole(s, m, *RoleId)
+		}
+    if *SWCommand == message {
+			modules.AddWowRole(s, m, *SWCRoleId)
 		}
 	}
 }
