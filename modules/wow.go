@@ -15,13 +15,10 @@ func getWowCommand(message string) (string, error) {
 		return "", fmt.Errorf("Invalid command. Can not split wow command.")
 	}
 	return splitMessage[1], nil
-
 }
 
 func GetDiscordClass(message string) string {
-
 	class, err := getWowCommand(message)
-
 	if err != nil {
 		return "Commande incorrect.\n /help pour voir la liste des classes"
 	}
@@ -63,7 +60,6 @@ func GetDiscordClass(message string) string {
 }
 
 func GetMemes(message string) (string, error) {
-
 	meme, err := getWowCommand(message)
 	if err != nil {
 		return "", err
@@ -78,7 +74,9 @@ func GetMemes(message string) (string, error) {
 	}
 
 	if memeMessage == "" {
-		return "Pas de bonnes commandes, pas de memes !", fmt.Errorf("Command is not associated to a meme link")
+		return "Pas de bonnes commandes, pas de memes !", fmt.Errorf(
+			"Command is not associated to a meme link",
+		)
 	}
 	return memeMessage, nil
 }
