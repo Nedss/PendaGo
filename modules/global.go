@@ -8,7 +8,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func createPollEmbedMessage(question string, answer string, answerNumber string) *discordgo.MessageEmbed {
+func createPollEmbedMessage(
+	question string,
+	answer string,
+	answerNumber string,
+) *discordgo.MessageEmbed {
 	pollEmbed := NewEmbed().
 		SetTitle(question).
 		SetDescription(answer).
@@ -18,7 +22,6 @@ func createPollEmbedMessage(question string, answer string, answerNumber string)
 }
 
 func splitPollMessage(message string) ([]string, error) {
-
 	splitMessage := strings.Split(message, "\"")
 
 	// Remove empty
@@ -75,7 +78,6 @@ func generatePollEmbedMessage(m *discordgo.MessageCreate) (*discordgo.MessageEmb
 }
 
 func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate) error {
-
 	umoji := [9]string{
 		"\u0031\u20E3",
 		"\u0032\u20E3",
@@ -96,14 +98,12 @@ func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate)
 	}
 
 	sentMessage, err := s.ChannelMessageSendEmbed(channelId, me)
-
 	if err != nil {
 		return err
 	}
 
 	sentMessageId := sentMessage.ID
 	answerLength, err := strconv.Atoi(me.Fields[0].Value)
-
 	if err != nil {
 		return err
 	}
@@ -113,5 +113,47 @@ func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate)
 	}
 
 	return nil
+}
 
+func BoostHandler(
+	session *discordgo.Session,
+	event *discordgo.GuildMemberUpdate,
+	roleBoost string,
+	pendaRole string,
+	pendaGoldRole string,
+) error {
+	guildID := event.GuildID
+	memberID := event.User.ID
+	member := event.Member
+
+	//member, err := session.GuildMember(guildID, memberID)
+	//if err != nil {
+	//	return err
+	//}
+
+	hasPenda := false
+	for _, role := range member.Roles {
+		if role == pendaRole {
+			hasPenda = true
+			break
+		}
+	}
+
+	if hasPenda {
+		hasBoost := false
+		for _, role := range member.Roles {
+			if role == roleBoost {
+				hasBoost = true
+				break
+			}
+		}
+
+		if hasBoost {
+			err := session.GuildMemberRoleAdd(guildID, memberID, pendaGoldRole)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
