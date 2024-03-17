@@ -22,6 +22,8 @@ var (
 	RoleBoost      = flag.String("rb", "", "Boost role ID")
 	PendaRole      = flag.String("pr", "", "Penda Role ID")
 	PendaGoldRole  = flag.String("pgr", "", "Penda Gold Role ID")
+  SWCommand     = flag.String("sc", "", "Trigger command to add SWC role on discord")
+  SWCRoleId     = flag.String("sr", "", "Role ID of SWC to add with discord command")
 )
 
 func init() { flag.Parse() }
@@ -115,6 +117,9 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if channelId == *BotChanId {
 		if *TriggerCommand == message {
 			modules.AddWowRole(s, m, *RoleId)
+		}
+    if *SWCommand == message {
+			modules.AddWowRole(s, m, *SWCRoleId)
 		}
 	}
 }
