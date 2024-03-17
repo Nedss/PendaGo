@@ -1,9 +1,7 @@
 package modules
 
 import (
-	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -118,33 +116,44 @@ func GeneratePollEmbedReaction(s *discordgo.Session, m *discordgo.MessageCreate)
 }
 
 func BoostHandler(
-	s *discordgo.Session,
-	e *discordgo.GuildMemberUpdate,
-	boostRoleID string,
-	pendaRoleID string,
+	session *discordgo.Session,
+	event *discordgo.GuildMemberUpdate,
+	roleBoost string,
+	pendaRole string,
 	pendaGoldRole string,
 ) error {
-	if e.Member != nil && e.Member.Roles != nil {
-		var isPenda bool = false
-		var isBooster bool = false
-		for _, roleID := range e.Member.Roles {
-			if roleID == boostRoleID {
-				isBooster = true
-			}
-			if roleID == pendaRoleID {
-				isPenda = true
+	guildID := event.GuildID
+	memberID := event.User.ID
+	member := event.Member
+
+	//member, err := session.GuildMember(guildID, memberID)
+	//if err != nil {
+	//	return err
+	//}
+
+	hasPenda := false
+	for _, role := range member.Roles {
+		if role == pendaRole {
+			hasPenda = true
+			break
+		}
+	}
+
+	if hasPenda {
+		hasBoost := false
+		for _, role := range member.Roles {
+			if role == roleBoost {
+				hasBoost = true
+				break
 			}
 		}
-		if isPenda == true && isBooster == true {
-			err := s.GuildMemberRoleAdd(e.GuildID, e.User.ID, pendaGoldRole)
+
+		if hasBoost {
+			err := session.GuildMemberRoleAdd(guildID, memberID, pendaGoldRole)
 			if err != nil {
-				log.Fatal("Error during role attribution to member", err)
 				return err
 			}
-			return nil
 		}
-	} else {
-		return errors.New("Wrong member and Roles")
 	}
 	return nil
 }

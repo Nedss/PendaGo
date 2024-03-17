@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -22,7 +21,7 @@ var (
 	TriggerCommand = flag.String("c", "", "Trigger command to add role on discord")
 	RoleBoost      = flag.String("rb", "", "Boost role ID")
 	PendaRole      = flag.String("pr", "", "Penda Role ID")
-	PendaGoldRole  = flag.String("pgr", "", "Penga Gold Role ID")
+	PendaGoldRole  = flag.String("pgr", "", "Penda Gold Role ID")
 )
 
 func init() { flag.Parse() }
@@ -34,14 +33,8 @@ func main() {
 		return
 	}
 
-	discordBot.AddHandler(messageCreate)
-	// discordBot.AddHandler(modules.bosstHandler(*RoleBoost, *PendaRole, *PendaGoldRole))
-	discordBot.AddHandler(func(s *discordgo.Session, e *discordgo.GuildMemberUpdate) {
-		modules.BoostHandler(s, e, *RoleBoost, *PendaRole, *PendaGoldRole)
-	})
-
-	// Only listen receiving message events
-	discordBot.Identify.Intents = discordgo.IntentsGuildMessages
+	// discordBot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAll)
+	discordBot.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers
 
 	err = discordBot.Open()
 	if err != nil {
@@ -49,24 +42,30 @@ func main() {
 		return
 	}
 
+	// Only listen receiving message events
+
+	discordBot.AddHandler(messageCreate)
+	discordBot.AddHandler(guildMemberBoost)
+
 	// Wait here until CTRL-C or other term signal is received.
-	fmt.Println("Bot is now running.  Press CTRL-C to exit or kill processus.")
+	log.Println("Bot is now running.  Press CTRL-C to exit or kill processus.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
-
 	discordBot.Close()
 }
 
-func createHelpEmbedMessage() *discordgo.MessageEmbed {
-	helpEmbed := modules.NewEmbed().
-		SetTitle("A l'aide Petit Penda !").
-		SetDescription("Liste des commandes disponibles :").
-		AddField("/poll", "ex : /poll 'Question' 'Réponse 1' 'Réponse 2' (9 réponses max)").
-		AddField("/wowdiscord", "ex : /wowdiscord druid (classes: druid, monk, rogue, dh, hunter, shaman, priest, warlock, mage, warrior, paladin, dk, evoker)").
-		AddField("/memes", "A vous de trouver.").
-		SetColor(0x339A8C).MessageEmbed
-	return helpEmbed
+func guildMemberBoost(s *discordgo.Session, event *discordgo.GuildMemberUpdate) {
+	err := modules.BoostHandler(
+		s,
+		event,
+		*RoleBoost,
+		*PendaRole,
+		*PendaGoldRole,
+	)
+	if err != nil {
+		log.Fatal("Error during role attribution : ", err)
+	}
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -78,7 +77,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channelId := m.ChannelID
 
 	if message == "/help" {
-		messageEmbed := createHelpEmbedMessage()
+		messageEmbed := modules.CreateHelpEmbedMessage()
 		s.ChannelMessageSendEmbed(channelId, messageEmbed)
 	}
 
