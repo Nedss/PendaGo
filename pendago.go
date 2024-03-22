@@ -5,36 +5,32 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"pendago/handlers"
 	"pendago/modules"
-	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 var (
-	BotToken       = flag.String("t", "", "Bot token")
-	WowLogChanId   = flag.String("wl", "", "Channel ID to put WoW logs")
-	WowChanId      = flag.String("wc", "", "Channel ID to put WoW commands")
-	BotChanId      = flag.String("bc", "", "Chan of generic bot commands")
-	RoleId         = flag.String("r", "", "Role ID to add with discord command")
-	TriggerCommand = flag.String("c", "", "Trigger command to add role on discord")
-	RoleBoost      = flag.String("rb", "", "Boost role ID")
-	PendaRole      = flag.String("pr", "", "Penda Role ID")
-	PendaGoldRole  = flag.String("pgr", "", "Penda Gold Role ID")
-  SWCommand     = flag.String("sc", "", "Trigger command to add SWC role on discord")
-  SWCRoleId     = flag.String("sr", "", "Role ID of SWC to add with discord command")
+	BotToken  = flag.String("t", "", "Bot token")
+	BotConfig = flag.String("c", "", "JSON config file")
 )
 
 func init() { flag.Parse() }
 
 func main() {
+	log.Println("Given file : ", *BotConfig)
+	err := modules.ReadConfig(*BotConfig)
+	if err != nil {
+		log.Println("Fail while reading config file ", err)
+	}
+
 	discordBot, err := discordgo.New("Bot " + *BotToken)
 	if err != nil {
 		log.Fatal("error creating Discord session", err)
 		return
 	}
-
 	// discordBot.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsAll)
 	discordBot.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers
 
@@ -58,12 +54,12 @@ func main() {
 }
 
 func guildMemberBoost(s *discordgo.Session, event *discordgo.GuildMemberUpdate) {
-	err := modules.BoostHandler(
+	err := handlers.BoostHandler(
 		s,
 		event,
-		*RoleBoost,
-		*PendaRole,
-		*PendaGoldRole,
+		modules.RoleBoost,
+		modules.PendaRole,
+		modules.PendaGoldRole,
 	)
 	if err != nil {
 		log.Fatal("Error during role attribution : ", err)
@@ -71,55 +67,15 @@ func guildMemberBoost(s *discordgo.Session, event *discordgo.GuildMemberUpdate) 
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-
-	message := m.Content
-	channelId := m.ChannelID
-
-	if message == "/help" {
-		messageEmbed := modules.CreateHelpEmbedMessage()
-		s.ChannelMessageSendEmbed(channelId, messageEmbed)
-	}
-
-	// Case Wow log channel
-	if channelId == *WowLogChanId {
-		if strings.HasPrefix(message, "/analyselog") {
-			formatLogLink, err := modules.GetLogAnalyzer(message)
-			if err != nil {
-				return
-			}
-			s.ChannelMessageSendReply(channelId, formatLogLink, m.Reference())
-		}
-	}
-
-	// Case Wow channel
-	if channelId == *WowChanId {
-		// Wow Discord command
-		if strings.HasPrefix(message, "/wowdiscord") {
-			discordMessage := modules.GetDiscordClass(message)
-			s.ChannelMessageSendReply(channelId, discordMessage, m.Reference())
-		}
-		// Memes
-		if strings.HasPrefix(message, "/memes") {
-			memeMessage, err := modules.GetMemes(message)
-			if err != nil {
-				return
-			}
-			s.ChannelMessageSendReply(channelId, memeMessage, m.Reference())
-		}
-	}
-	// Global
-	if strings.HasPrefix(message, "/poll") {
-		modules.GeneratePollEmbedReaction(s, m)
-	}
-	if channelId == *BotChanId {
-		if *TriggerCommand == message {
-			modules.AddWowRole(s, m, *RoleId)
-		}
-    if *SWCommand == message {
-			modules.AddWowRole(s, m, *SWCRoleId)
-		}
-	}
+	handlers.MessageHandler(
+		s,
+		m,
+		modules.WowLogChanId,
+		modules.WowChanId,
+		modules.BotChanId,
+		modules.TriggerCommand,
+		modules.RoleId,
+		modules.SWCRoleId,
+		modules.SWCommand,
+	)
 }
