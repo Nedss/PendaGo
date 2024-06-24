@@ -42,6 +42,11 @@ func BoostHandler(
 			if err != nil {
 				return err
 			}
+		} else {
+			err := session.GuildMemberRoleRemove(guildID, memberID, pendaGoldRole)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
