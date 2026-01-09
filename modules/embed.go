@@ -240,6 +240,7 @@ func CreateHelpEmbedMessage() *discordgo.MessageEmbed {
 		SetDescription("Liste des commandes disponibles :").
 		AddField("/poll", "ex : /poll 'Question' 'Réponse 1' 'Réponse 2' (9 réponses max)").
 		AddField("/wowdiscord", "ex : /wowdiscord druid (classes: druid, monk, rogue, dh, hunter, shaman, priest, warlock, mage, warrior, paladin, dk, evoker)").
+		AddField("/minecraft whitelist_add", "ex : /minecraft whitelist_add pseudo (commande slash dans botcommand)").
 		AddField("/memes", "A vous de trouver.").
 		SetColor(0x339A8C).MessageEmbed
 	return helpEmbed
