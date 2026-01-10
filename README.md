@@ -20,6 +20,11 @@ Usage of ./pendago:
         Bot token
 ```
 
+# RCON
+
+The bot uses `mcrcon` to send Minecraft whitelist commands. Ensure it is installed
+and available in `PATH` on the host running the bot.
+
 # Config file
 
 This is an example of the `config.json` required as `-c` parameter :
@@ -35,6 +40,9 @@ This is an example of the `config.json` required as `-c` parameter :
   "penda_role": "<ROLE ID>",
   "penda_gold_role": "<ROLE ID>",
   "sw_command": "<CMD>",
-  "swc_role_id": "<ROLE ID>"
+  "swc_role_id": "<ROLE ID>",
+  "rcon_host": "<RCON HOST>",
+  "rcon_port": "<RCON PORT>",
+  "rcon_password": "<RCON PASSWORD>"
 }
 ```

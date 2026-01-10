@@ -17,6 +17,9 @@ var (
 	PendaGoldRole  string
 	SWCommand      string
 	SWCRoleId      string
+	RCONHost       string
+	RCONPort       string
+	RCONPassword   string
 
 	config *configFile
 )
@@ -32,6 +35,9 @@ type configFile struct {
 	PendaGoldRole  string `json:"penda_gold_role"`
 	SWCommand      string `json:"sw_command"`
 	SWCRoleId      string `json:"swc_role_id"`
+	RCONHost       string `json:"rcon_host"`
+	RCONPort       string `json:"rcon_port"`
+	RCONPassword   string `json:"rcon_password"`
 }
 
 func ReadConfig(configFile string) error {
@@ -61,6 +67,9 @@ func ReadConfig(configFile string) error {
 	PendaGoldRole = config.PendaGoldRole
 	SWCommand = config.SWCommand
 	SWCRoleId = config.SWCRoleId
+	RCONHost = config.RCONHost
+	RCONPort = config.RCONPort
+	RCONPassword = config.RCONPassword
 
 	return nil
 }

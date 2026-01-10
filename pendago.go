@@ -44,6 +44,34 @@ func main() {
 
 	discordBot.AddHandler(messageCreate)
 	discordBot.AddHandler(guildMemberBoost)
+	discordBot.AddHandler(interactionCreate)
+
+	_, err = discordBot.ApplicationCommandCreate(
+		discordBot.State.User.ID,
+		"",
+		&discordgo.ApplicationCommand{
+			Name:        "minecraft",
+			Description: "Commandes Minecraft.",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "whitelist_add",
+					Description: "Ajoute un joueur à la whitelist Minecraft.",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Type:        discordgo.ApplicationCommandOptionString,
+							Name:        "pseudo",
+							Description: "Pseudo Minecraft",
+							Required:    true,
+						},
+					},
+				},
+			},
+		},
+	)
+	if err != nil {
+		log.Println("Error creating command: ", err)
+	}
 
 	// Wait here until CTRL-C or other term signal is received.
 	log.Println("Bot is now running.  Press CTRL-C to exit or kill processus.")
@@ -77,5 +105,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		modules.RoleId,
 		modules.SWCRoleId,
 		modules.SWCommand,
+	)
+}
+
+func interactionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	handlers.InteractionHandler(
+		s,
+		i,
+		modules.BotChanId,
+		modules.PendaRole,
+		modules.RCONHost,
+		modules.RCONPort,
+		modules.RCONPassword,
 	)
 }
